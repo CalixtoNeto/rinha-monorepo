@@ -1,0 +1,42 @@
+[
+  {
+    "name": "com.rinhadebackend.model.PaymentRequest",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "com.rinhadebackend.model.ProcessorRequest",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "com.rinhadebackend.model.ProcessorResponse",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "com.rinhadebackend.model.PaymentSummaryResponse",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "com.rinhadebackend.model.PaymentSummaryResponse$ProcessorSummary",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.springframework.data.redis.serializer.StringRedisSerializer",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "io.github.resilience4j.retry.RetryConfig",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "io.github.resilience4j.circuitbreaker.CircuitBreakerConfig",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true
+  }
+]
