@@ -18,7 +18,8 @@ public class LoadBalancerApplication {
                 .addHost(new URI(backend2))
                 .setConnectionsPerThread(20);
 
-        HttpHandler proxyHandler = new ProxyHandler(proxy, "http://localhost");
+        // Create the proxy handler using the configured proxy client
+        HttpHandler proxyHandler = new ProxyHandler(proxy);
 
         Undertow server = Undertow.builder()
                 .addHttpListener(80, "0.0.0.0")
