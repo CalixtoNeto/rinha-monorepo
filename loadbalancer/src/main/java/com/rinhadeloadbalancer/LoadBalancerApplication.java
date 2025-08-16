@@ -1,4 +1,4 @@
-﻿package com.rinhadeloadbalancer;
+package com.rinhadeloadbalancer;
 
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
