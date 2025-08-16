@@ -17,7 +17,8 @@ public class ResilienceConfig {
         RetryConfig config = RetryConfig.custom()
                 .maxAttempts(3)
                 .waitDuration(Duration.ofMillis(50))
-                .intervalFunction(attempt -> Duration.ofMillis(50L * attempt))
+                // IntervalFunction expects a long value representing milliseconds
+                .intervalFunction(attempt -> 50L * attempt)
                 .retryExceptions(Exception.class)
                 .build();
         return Retry.of("processorRetry", config);
