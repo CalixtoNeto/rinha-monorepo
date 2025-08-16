@@ -6,7 +6,7 @@ WORKDIR /app
 COPY pom.xml ./
 COPY backend ./backend
 # build native executable for backend module
-RUN mvn -e -X -f backend/pom.xml -Pnative native:compile -DskipTests
+RUN mvn -f backend/pom.xml -Pnative native:compile -DskipTests
 
 FROM ubuntu:22.04
 WORKDIR /app

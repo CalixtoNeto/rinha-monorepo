@@ -1,0 +1,13 @@
+com\rinhadebackend\config\WebClientConfig.class
+com\rinhadebackend\model\ProcessorResponse.class
+com\rinhadebackend\controller\PaymentController.class
+com\rinhadebackend\model\ProcessorRequest.class
+com\rinhadebackend\RinhaDeBackendApplication.class
+com\rinhadebackend\config\RedisConfig.class
+com\rinhadebackend\config\ResilienceConfig.class
+com\rinhadebackend\service\PaymentService.class
+com\rinhadebackend\service\RetryQueueService.class
+com\rinhadebackend\model\PaymentSummaryResponse.class
+com\rinhadebackend\model\PaymentSummaryResponse$ProcessorSummary.class
+com\rinhadebackend\model\PaymentResult.class
+com\rinhadebackend\model\PaymentRequest.class

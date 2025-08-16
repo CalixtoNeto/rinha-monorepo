@@ -1,0 +1,12 @@
+C:\dev\rinha-monorepo\backend\src\main\java\com\rinhadebackend\config\RedisConfig.java
+C:\dev\rinha-monorepo\backend\src\main\java\com\rinhadebackend\config\ResilienceConfig.java
+C:\dev\rinha-monorepo\backend\src\main\java\com\rinhadebackend\config\WebClientConfig.java
+C:\dev\rinha-monorepo\backend\src\main\java\com\rinhadebackend\controller\PaymentController.java
+C:\dev\rinha-monorepo\backend\src\main\java\com\rinhadebackend\model\PaymentRequest.java
+C:\dev\rinha-monorepo\backend\src\main\java\com\rinhadebackend\model\PaymentResult.java
+C:\dev\rinha-monorepo\backend\src\main\java\com\rinhadebackend\model\PaymentSummaryResponse.java
+C:\dev\rinha-monorepo\backend\src\main\java\com\rinhadebackend\model\ProcessorRequest.java
+C:\dev\rinha-monorepo\backend\src\main\java\com\rinhadebackend\model\ProcessorResponse.java
+C:\dev\rinha-monorepo\backend\src\main\java\com\rinhadebackend\RinhaDeBackendApplication.java
+C:\dev\rinha-monorepo\backend\src\main\java\com\rinhadebackend\service\PaymentService.java
+C:\dev\rinha-monorepo\backend\src\main\java\com\rinhadebackend\service\RetryQueueService.java

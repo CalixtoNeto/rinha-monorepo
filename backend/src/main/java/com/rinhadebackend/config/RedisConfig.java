@@ -2,9 +2,11 @@ package com.rinhadebackend.config;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import io.lettuce.core.ClientOptions;
+import org.springframework.beans.factory.annotation.Qualifier; // Add this import
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
@@ -26,6 +28,7 @@ public class RedisConfig {
     private int port;
 
     @Bean
+    @Primary // Prioritize this factory
     public ReactiveRedisConnectionFactory reactiveRedisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
         GenericObjectPoolConfig<?> poolConfig = new GenericObjectPoolConfig<>();
@@ -42,8 +45,10 @@ public class RedisConfig {
     }
 
     @Bean
+    @Primary // Prioritize this template (if needed)
     public ReactiveRedisTemplate<String, String> reactiveRedisTemplate(ReactiveRedisConnectionFactory factory) {
-        RedisSerializationContext<String, String> serializationContext = RedisSerializationContext.fromSerializer(StringRedisSerializer.UTF_8);
+        RedisSerializationContext<String, String> serializationContext =
+                RedisSerializationContext.fromSerializer(StringRedisSerializer.UTF_8);
         return new ReactiveRedisTemplate<>(factory, serializationContext);
     }
 }

@@ -15,23 +15,20 @@ public class ResilienceConfig {
     @Bean
     public Retry retry() {
         RetryConfig config = RetryConfig.custom()
-                .maxAttempts(3)
-                .waitDuration(Duration.ofMillis(50))
-                // IntervalFunction expects a long value representing milliseconds
-                .intervalFunction(attempt -> 50L * attempt)
-                .retryExceptions(Exception.class)
+                .maxAttempts(3) // Maximum retry attempts
+                .intervalFunction(attempt -> 1000L * attempt) // Exponential backoff: 1s, 2s, 3s
                 .build();
-        return Retry.of("processorRetry", config);
+        return Retry.of("paymentRetry", config);
     }
 
     @Bean
     public CircuitBreaker circuitBreaker() {
         CircuitBreakerConfig config = CircuitBreakerConfig.custom()
-                .failureRateThreshold(50f)
-                .waitDurationInOpenState(Duration.ofMillis(1000))
-                .permittedNumberOfCallsInHalfOpenState(10)
-                .slidingWindowSize(100)
+                .failureRateThreshold(50) // 50% failure rate to open circuit
+                .waitDurationInOpenState(Duration.ofSeconds(5)) // Time to wait before transitioning to half-open
+                .permittedNumberOfCallsInHalfOpenState(3) // Calls allowed in half-open state
+                .slidingWindowSize(10) // Size of sliding window for failure tracking
                 .build();
-        return CircuitBreaker.of("processorCircuitBreaker", config);
+        return CircuitBreaker.of("paymentCircuitBreaker", config);
     }
 }
