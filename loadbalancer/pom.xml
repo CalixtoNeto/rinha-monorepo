@@ -25,6 +25,37 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+            <!-- Disable the native image build by default. The GraalVM tooling is
+                 only available in environments that have GraalVM installed, so
+                 attempting to run it in a standard JDK setup causes the build
+                 to fail. The plugin can be re-enabled by removing the skip flag
+                 or by providing a dedicated Maven profile when native images
+                 are required. -->
+            <plugin>
+                <groupId>org.graalvm.buildtools</groupId>
+                <artifactId>native-maven-plugin</artifactId>
+                <version>0.10.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <skipNativeBuild>true</skipNativeBuild>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>native</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.graalvm.buildtools</groupId>
+                        <artifactId>native-maven-plugin</artifactId>
+                        <configuration>
+                            <skipNativeBuild>false</skipNativeBuild>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
