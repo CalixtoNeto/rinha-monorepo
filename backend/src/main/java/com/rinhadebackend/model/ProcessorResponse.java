@@ -1,4 +1,4 @@
-﻿package com.rinhadebackend.model;
+package com.rinhadebackend.model;
 
 import org.springframework.http.HttpStatus;
 
