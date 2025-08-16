@@ -25,6 +25,9 @@ public class PaymentService {
     private WebClient defaultProcessorWebClient;
 
     @Autowired
+    private WebClient fallbackProcessorWebClient;
+
+    @Autowired
     private ReactiveRedisTemplate<String, String> redisTemplate;
 
     @Autowired
@@ -46,11 +49,20 @@ public class PaymentService {
     }
 
     public Mono<Void> processPayment(ProcessorRequest request) {
-        Mono<ProcessorResponse> responseMono = defaultProcessorWebClient.post()
+        return sendToProcessor(defaultProcessorWebClient, "payments:default", request)
+                .onErrorResume(error -> sendToProcessor(fallbackProcessorWebClient, "payments:fallback", request));
+    }
+
+    private Mono<Void> sendToProcessor(WebClient client, String key, ProcessorRequest request) {
+        Mono<ProcessorResponse> responseMono = client.post()
                 .bodyValue(request)
                 .retrieve()
                 .toEntity(ProcessorResponse.class)
-                .map(responseEntity -> responseEntity.getBody());
+                .map(entity -> {
+                    ProcessorResponse body = entity.getBody();
+                    body.setStatusCode(entity.getStatusCode());
+                    return body;
+                });
 
         return Mono.defer(() -> responseMono)
                 .transformDeferred(Retry.decorateMono(retry))
@@ -59,40 +71,53 @@ public class PaymentService {
                     if (response.is5xxServerError()) {
                         return Mono.error(new RuntimeException("5xx error"));
                     }
-                    return storeInRedis(request);
+                    return storeInRedis(key, request);
                 });
     }
 
-    private Mono<Void> storeInRedis(ProcessorRequest request) {
-        String key = "payments:default";
+    private Mono<Void> storeInRedis(String key, ProcessorRequest request) {
         String value = request.getAmount().toPlainString() + ":" + request.getCorrelationId();
         double score = request.getRequestedAt().toEpochMilli();
         return redisTemplate.opsForZSet().add(key, value, score).then();
     }
 
     public Mono<PaymentSummaryResponse> getPaymentSummary(Instant from, Instant to) {
-        String key = "payments:default";
+        String defaultKey = "payments:default";
+        String fallbackKey = "payments:fallback";
         double minScore = from != null ? from.toEpochMilli() : Double.NEGATIVE_INFINITY;
         double maxScore = to != null ? to.toEpochMilli() : Double.POSITIVE_INFINITY;
 
-        return redisTemplate.opsForZSet().rangeByScore(key, minScore, maxScore)
-                .collectList()
-                .map(members -> {
-                    AtomicReference<BigDecimal> sum = new AtomicReference<>(BigDecimal.ZERO);
-                    int count = members.size();
-                    members.forEach(member -> {
+        Mono<java.util.List<String>> defaultData = redisTemplate.opsForZSet().rangeByScore(defaultKey, minScore, maxScore).collectList();
+        Mono<java.util.List<String>> fallbackData = redisTemplate.opsForZSet().rangeByScore(fallbackKey, minScore, maxScore).collectList();
+
+        return Mono.zip(defaultData, fallbackData)
+                .map(tuple -> {
+                    java.util.List<String> defaultMembers = tuple.getT1();
+                    java.util.List<String> fallbackMembers = tuple.getT2();
+
+                    AtomicReference<BigDecimal> defaultSum = new AtomicReference<>(BigDecimal.ZERO);
+                    defaultMembers.forEach(member -> {
                         String[] parts = member.split(":");
-                        sum.updateAndGet(v -> v.add(new BigDecimal(parts[0])));
+                        defaultSum.updateAndGet(v -> v.add(new BigDecimal(parts[0])));
                     });
+
+                    AtomicReference<BigDecimal> fallbackSum = new AtomicReference<>(BigDecimal.ZERO);
+                    fallbackMembers.forEach(member -> {
+                        String[] parts = member.split(":");
+                        fallbackSum.updateAndGet(v -> v.add(new BigDecimal(parts[0])));
+                    });
+
                     PaymentSummaryResponse response = new PaymentSummaryResponse();
                     PaymentSummaryResponse.ProcessorSummary defaultSummary = new PaymentSummaryResponse.ProcessorSummary();
-                    defaultSummary.setTotalRequests(count);
-                    defaultSummary.setTotalAmount(sum.get());
+                    defaultSummary.setTotalRequests(defaultMembers.size());
+                    defaultSummary.setTotalAmount(defaultSum.get());
                     response.setDefaultProcessor(defaultSummary);
+
                     PaymentSummaryResponse.ProcessorSummary fallbackSummary = new PaymentSummaryResponse.ProcessorSummary();
-                    fallbackSummary.setTotalRequests(0);
-                    fallbackSummary.setTotalAmount(BigDecimal.ZERO);
+                    fallbackSummary.setTotalRequests(fallbackMembers.size());
+                    fallbackSummary.setTotalAmount(fallbackSum.get());
                     response.setFallback(fallbackSummary);
+
                     return response;
                 });
     }

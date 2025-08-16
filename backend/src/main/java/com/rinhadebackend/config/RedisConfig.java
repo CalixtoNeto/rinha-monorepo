@@ -18,10 +18,10 @@ import java.time.Duration;
 @Configuration
 public class RedisConfig {
 
-    @Value("")
+    @Value("${spring.redis.host}")
     private String host;
 
-    @Value("")
+    @Value("${spring.redis.port}")
     private int port;
 
     @Bean
