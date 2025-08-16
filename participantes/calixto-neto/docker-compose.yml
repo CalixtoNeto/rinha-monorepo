@@ -1,6 +1,6 @@
 services:
   loadbalancer:
-    image: rinha-loadbalancer:latest
+    image: calixtusneto/rinha-loadbalancer:latest
     ports:
       - "9999:80"
     environment:
@@ -20,7 +20,7 @@ services:
       - rinha-net
 
   backend1:
-    image: rinha-backend:latest
+    image: calixtusneto/rinha-backend:latest
     environment:
       SPRING_REDIS_HOST: redis
       PAYMENT_PROCESSOR_DEFAULT_URL: http://payment-processor-default:8080
@@ -43,7 +43,7 @@ services:
       - payment-processor
 
   backend2:
-    image: rinha-backend:latest
+    image: calixtusneto/rinha-backend:latest
     environment:
       SPRING_REDIS_HOST: redis
       PAYMENT_PROCESSOR_DEFAULT_URL: http://payment-processor-default:8080
