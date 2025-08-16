@@ -18,8 +18,12 @@ public class LoadBalancerApplication {
                 .addHost(new URI(backend2))
                 .setConnectionsPerThread(20);
 
-        // Create the proxy handler using the configured proxy client
-        HttpHandler proxyHandler = new ProxyHandler(proxy);
+        // Create the proxy handler using the configured proxy client.
+        // Undertow 2.3 removed the constructor that accepted a ProxyClient
+        // instance directly, requiring the use of the builder instead.
+        HttpHandler proxyHandler = ProxyHandler.builder()
+                .setProxyClient(proxy)
+                .build();
 
         Undertow server = Undertow.builder()
                 .addHttpListener(80, "0.0.0.0")
