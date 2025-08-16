@@ -5,8 +5,12 @@ import com.rinhadebackend.model.PaymentSummaryResponse;
 import com.rinhadebackend.model.ProcessorRequest;
 import com.rinhadebackend.model.ProcessorResponse;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.reactor.circuitbreaker.CircuitBreakerOperator;
+import io.github.resilience4j.reactor.retry.RetryOperator;
 import io.github.resilience4j.retry.Retry;
+import org.springframework.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Range;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -64,13 +68,14 @@ public class PaymentService {
                 .toEntity(ProcessorResponse.class)
                 .map(entity -> {
                     ProcessorResponse body = entity.getBody();
-                    body.setStatusCode(entity.getStatusCode());
+                    HttpStatus status = HttpStatus.valueOf(entity.getStatusCode().value());
+                    body.setStatusCode(status);
                     return body;
                 });
 
         return Mono.defer(() -> responseMono)
-                .transformDeferred(Retry.decorateMono(retry))
-                .transformDeferred(CircuitBreaker.decorateMono(circuitBreaker))
+                .transformDeferred(RetryOperator.of(retry))
+                .transformDeferred(CircuitBreakerOperator.of(circuitBreaker))
                 .flatMap(response -> {
                     if (response.is5xxServerError()) {
                         return Mono.error(new RuntimeException("5xx error"));
@@ -88,14 +93,19 @@ public class PaymentService {
     public Mono<PaymentSummaryResponse> getPaymentSummary(Instant from, Instant to) {
         String defaultKey = "payments:default";
         String fallbackKey = "payments:fallback";
-        double minScore = from != null ? from.toEpochMilli() : Double.NEGATIVE_INFINITY;
-        double maxScore = to != null ? to.toEpochMilli() : Double.POSITIVE_INFINITY;
+        Range.Bound<Double> lower = from != null
+                ? Range.Bound.inclusive((double) from.toEpochMilli())
+                : Range.Bound.unbounded();
+        Range.Bound<Double> upper = to != null
+                ? Range.Bound.inclusive((double) to.toEpochMilli())
+                : Range.Bound.unbounded();
+        Range<Double> range = Range.of(lower, upper);
 
         Mono<List<String>> defaultData = redisTemplate.opsForZSet()
-                .rangeByScore(defaultKey, minScore, maxScore)
+                .rangeByScore(defaultKey, range)
                 .collectList();
         Mono<List<String>> fallbackData = redisTemplate.opsForZSet()
-                .rangeByScore(fallbackKey, minScore, maxScore)
+                .rangeByScore(fallbackKey, range)
                 .collectList();
 
         return Mono.zip(defaultData, fallbackData)
