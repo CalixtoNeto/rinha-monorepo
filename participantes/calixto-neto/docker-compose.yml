@@ -1,0 +1,81 @@
+﻿version: '3.8'
+services:
+  loadbalancer:
+    image: rinha-loadbalancer:latest
+    ports:
+      - "80:80"
+    environment:
+      BACKEND1_URL: http://backend1:8080
+      BACKEND2_URL: http://backend2:8080
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 50M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - rinha-net
+
+  backend1:
+    image: rinha-backend:latest
+    environment:
+      REDIS_HOST: redis
+      JAVA_OPTS: -Xmx128m
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 150M
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - rinha-net
+
+  backend2:
+    image: rinha-backend:latest
+    environment:
+      REDIS_HOST: redis
+      JAVA_OPTS: -Xmx128m
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 150M
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - rinha-net
+
+  redis:
+    image: redis:latest
+    command: redis-server --maxmemory 100mb --maxmemory-policy allkeys-lru
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 100M
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - rinha-net
+
+networks:
+  rinha-net:
+    driver: bridge

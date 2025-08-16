@@ -1,0 +1,14 @@
+﻿server:
+  port: 8080
+spring:
+  redis:
+    host: 
+    port: 6379
+logging:
+  level:
+    root: WARN
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus

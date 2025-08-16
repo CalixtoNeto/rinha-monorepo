@@ -1,0 +1,8 @@
+﻿FROM maven:3.9.6-amazoncorretto-21 AS builder
+WORKDIR /app
+COPY . /app
+RUN mvn package -DskipTests
+FROM amazoncorretto:21-alpine
+WORKDIR /app
+COPY --from=builder /app/target/rinha-loadbalancer.jar /app/rinha-loadbalancer.jar
+CMD ["java", "-jar", "/app/rinha-loadbalancer.jar"]
