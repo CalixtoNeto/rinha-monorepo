@@ -1,8 +1,6 @@
 services:
   loadbalancer:
-    build:
-      context: .
-      dockerfile: Dockerfile.loadbalancer
+    image: calixtusneto/rinha-loadbalancer:latest
     ports:
       - "9999:80"
     environment:
@@ -22,9 +20,7 @@ services:
       - rinha-net
 
   backend1:
-    build:
-      context: .
-      dockerfile: Dockerfile.backend
+    image: calixtusneto/rinha-backend:latest
     environment:
       SPRING_REDIS_HOST: redis
       PAYMENT_PROCESSOR_DEFAULT_URL: http://payment-processor-default:8080
@@ -47,9 +43,7 @@ services:
       - payment-processor
 
   backend2:
-    build:
-      context: .
-      dockerfile: Dockerfile.backend
+    image: calixtusneto/rinha-backend:latest
     environment:
       SPRING_REDIS_HOST: redis
       PAYMENT_PROCESSOR_DEFAULT_URL: http://payment-processor-default:8080
