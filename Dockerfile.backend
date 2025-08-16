@@ -1,7 +1,10 @@
-﻿FROM ghcr.io/graalvm/native-image-community:21 AS builder
+FROM ghcr.io/graalvm/native-image-community:21 AS builder
+# install Maven in the builder image
+RUN microdnf install -y maven && microdnf clean all
 WORKDIR /app
 COPY . /app
 RUN mvn -Pnative native:compile -DskipTests
+
 FROM ubuntu:22.04
 WORKDIR /app
 COPY --from=builder /app/target/rinha-backend /app/rinha-backend

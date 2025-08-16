@@ -1,5 +1,7 @@
 ﻿#!/bin/bash
-# Build os mÃ³dulos Maven
+set -e
+
+# Build Maven modules
 mvn clean package -DskipTests
 # Build imagens Docker
 docker build -f Dockerfile.backend -t ghcr.io/calixto-neto/rinha-backend:latest .
