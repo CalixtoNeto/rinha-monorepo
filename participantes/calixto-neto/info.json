@@ -1,7 +1,7 @@
 {
-  "name": "Grok xAI",
-  "social": ["@grok"],
-  "source-code-repo": "https://github.com/xai-org/rinha-backend-2025",
+  "name": "Calixto Neto",
+  "social": ["@CalixtoNeto"],
+  "source-code-repo": "https://github.com/CalixtoNeto/rinha-backend",
   "langs": ["java"],
   "storages": ["redis"],
   "messaging": [],
