@@ -1,4 +1,4 @@
-﻿package com.rinhadebackend.config;
+package com.rinhadebackend.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -19,9 +19,14 @@ public class WebClientConfig {
     private String fallbackProcessorUrl;
 
     @Bean
-    public WebClient defaultProcessorWebClient() {
-        HttpClient httpClient = HttpClient.create()
-                .responseTimeout(Duration.ofMillis(500));
+    public HttpClient httpClient() {
+        return HttpClient.create()
+                .responseTimeout(Duration.ofMillis(500))
+                .compress(true);
+    }
+
+    @Bean
+    public WebClient defaultProcessorWebClient(HttpClient httpClient) {
         return WebClient.builder()
                 .baseUrl(defaultProcessorUrl)
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
@@ -29,9 +34,7 @@ public class WebClientConfig {
     }
 
     @Bean
-    public WebClient fallbackProcessorWebClient() {
-        HttpClient httpClient = HttpClient.create()
-                .responseTimeout(Duration.ofMillis(500));
+    public WebClient fallbackProcessorWebClient(HttpClient httpClient) {
         return WebClient.builder()
                 .baseUrl(fallbackProcessorUrl)
                 .clientConnector(new ReactorClientHttpConnector(httpClient))

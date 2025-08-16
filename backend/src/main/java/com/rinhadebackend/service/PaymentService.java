@@ -1,4 +1,4 @@
-﻿package com.rinhadebackend.service;
+package com.rinhadebackend.service;
 
 import com.rinhadebackend.model.PaymentRequest;
 import com.rinhadebackend.model.PaymentSummaryResponse;
@@ -15,8 +15,8 @@ import reactor.core.scheduler.Schedulers;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class PaymentService {
@@ -39,7 +39,11 @@ public class PaymentService {
     private final ConcurrentLinkedQueue<ProcessorRequest> retryQueue = new ConcurrentLinkedQueue<>();
 
     public void processPaymentAsync(PaymentRequest request) {
-        ProcessorRequest processorRequest = new ProcessorRequest(request.getCorrelationId(), request.getAmount(), Instant.now());
+        ProcessorRequest processorRequest = new ProcessorRequest(
+                request.getCorrelationId(),
+                request.getAmount(),
+                Instant.now()
+        );
         processPayment(processorRequest)
                 .subscribeOn(Schedulers.parallel())
                 .subscribe(
@@ -87,35 +91,30 @@ public class PaymentService {
         double minScore = from != null ? from.toEpochMilli() : Double.NEGATIVE_INFINITY;
         double maxScore = to != null ? to.toEpochMilli() : Double.POSITIVE_INFINITY;
 
-        Mono<java.util.List<String>> defaultData = redisTemplate.opsForZSet().rangeByScore(defaultKey, minScore, maxScore).collectList();
-        Mono<java.util.List<String>> fallbackData = redisTemplate.opsForZSet().rangeByScore(fallbackKey, minScore, maxScore).collectList();
+        Mono<List<String>> defaultData = redisTemplate.opsForZSet()
+                .rangeByScore(defaultKey, minScore, maxScore)
+                .collectList();
+        Mono<List<String>> fallbackData = redisTemplate.opsForZSet()
+                .rangeByScore(fallbackKey, minScore, maxScore)
+                .collectList();
 
         return Mono.zip(defaultData, fallbackData)
                 .map(tuple -> {
-                    java.util.List<String> defaultMembers = tuple.getT1();
-                    java.util.List<String> fallbackMembers = tuple.getT2();
+                    List<String> defaultMembers = tuple.getT1();
+                    List<String> fallbackMembers = tuple.getT2();
 
-                    AtomicReference<BigDecimal> defaultSum = new AtomicReference<>(BigDecimal.ZERO);
-                    defaultMembers.forEach(member -> {
-                        String[] parts = member.split(":");
-                        defaultSum.updateAndGet(v -> v.add(new BigDecimal(parts[0])));
-                    });
-
-                    AtomicReference<BigDecimal> fallbackSum = new AtomicReference<>(BigDecimal.ZERO);
-                    fallbackMembers.forEach(member -> {
-                        String[] parts = member.split(":");
-                        fallbackSum.updateAndGet(v -> v.add(new BigDecimal(parts[0])));
-                    });
+                    BigDecimal defaultSum = sumAmounts(defaultMembers);
+                    BigDecimal fallbackSum = sumAmounts(fallbackMembers);
 
                     PaymentSummaryResponse response = new PaymentSummaryResponse();
                     PaymentSummaryResponse.ProcessorSummary defaultSummary = new PaymentSummaryResponse.ProcessorSummary();
                     defaultSummary.setTotalRequests(defaultMembers.size());
-                    defaultSummary.setTotalAmount(defaultSum.get());
+                    defaultSummary.setTotalAmount(defaultSum);
                     response.setDefaultProcessor(defaultSummary);
 
                     PaymentSummaryResponse.ProcessorSummary fallbackSummary = new PaymentSummaryResponse.ProcessorSummary();
                     fallbackSummary.setTotalRequests(fallbackMembers.size());
-                    fallbackSummary.setTotalAmount(fallbackSum.get());
+                    fallbackSummary.setTotalAmount(fallbackSum);
                     response.setFallback(fallbackSummary);
 
                     return response;
@@ -124,5 +123,16 @@ public class PaymentService {
 
     public ConcurrentLinkedQueue<ProcessorRequest> getRetryQueue() {
         return retryQueue;
+    }
+
+    private BigDecimal sumAmounts(List<String> members) {
+        BigDecimal total = BigDecimal.ZERO;
+        for (String member : members) {
+            int idx = member.indexOf(':');
+            if (idx > 0) {
+                total = total.add(new BigDecimal(member.substring(0, idx)));
+            }
+        }
+        return total;
     }
 }

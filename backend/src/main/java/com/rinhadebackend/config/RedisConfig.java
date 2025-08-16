@@ -1,5 +1,6 @@
-﻿package com.rinhadebackend.config;
+package com.rinhadebackend.config;
 
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import io.lettuce.core.ClientOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -27,9 +28,14 @@ public class RedisConfig {
     @Bean
     public ReactiveRedisConnectionFactory reactiveRedisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
+        GenericObjectPoolConfig<?> poolConfig = new GenericObjectPoolConfig<>();
+        poolConfig.setMaxTotal(16);
+        poolConfig.setMaxIdle(16);
+        poolConfig.setMinIdle(4);
+
         LettuceClientConfiguration clientConfig = LettucePoolingClientConfiguration.builder()
                 .commandTimeout(Duration.ofMillis(100))
-                .poolConfig(io.lettuce.core.resource.ClientResources.builder().build().poolConfig())
+                .poolConfig(poolConfig)
                 .clientOptions(ClientOptions.builder().build())
                 .build();
         return new LettuceConnectionFactory(config, clientConfig);

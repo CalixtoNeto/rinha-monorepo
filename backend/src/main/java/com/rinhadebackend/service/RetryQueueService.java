@@ -1,10 +1,10 @@
-﻿package com.rinhadebackend.service;
+package com.rinhadebackend.service;
 
+import com.rinhadebackend.model.ProcessorRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,8 +26,9 @@ public class RetryQueueService {
             batch.add(request);
         }
         if (!batch.isEmpty()) {
+            int concurrency = Math.min(batch.size(), Runtime.getRuntime().availableProcessors());
             Flux.fromIterable(batch)
-                    .flatMap(paymentService::processPayment)
+                    .flatMap(paymentService::processPayment, concurrency)
                     .onErrorContinue((error, obj) -> {
                         ProcessorRequest failed = (ProcessorRequest) obj;
                         paymentService.getRetryQueue().add(failed);

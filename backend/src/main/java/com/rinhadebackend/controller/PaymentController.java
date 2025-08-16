@@ -1,4 +1,4 @@
-﻿package com.rinhadebackend.controller;
+package com.rinhadebackend.controller;
 
 import com.rinhadebackend.model.PaymentRequest;
 import com.rinhadebackend.model.PaymentSummaryResponse;

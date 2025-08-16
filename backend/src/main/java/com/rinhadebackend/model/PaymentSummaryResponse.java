@@ -1,4 +1,4 @@
-﻿package com.rinhadebackend.model;
+package com.rinhadebackend.model;
 
 import java.math.BigDecimal;
 
