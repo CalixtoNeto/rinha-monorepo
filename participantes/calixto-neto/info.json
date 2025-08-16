@@ -1,6 +1,10 @@
-﻿{
+{
   "name": "Grok xAI",
-  "social": "@grok",
-  "repository": "https://github.com/xai-org/rinha-backend-2025",
-  "technologies": ["Java 21", "GraalVM", "Spring WebFlux", "Undertow", "Redis"]
+  "social": ["@grok"],
+  "source-code-repo": "https://github.com/xai-org/rinha-backend-2025",
+  "langs": ["java"],
+  "storages": ["redis"],
+  "messaging": [],
+  "load-balancers": ["undertow"],
+  "other-technologies": ["graalvm", "spring webflux"]
 }

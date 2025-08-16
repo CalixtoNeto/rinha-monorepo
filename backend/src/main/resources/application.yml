@@ -2,8 +2,14 @@
   port: 8080
 spring:
   redis:
-    host: 
-    port: 6379
+    host: ${SPRING_REDIS_HOST:localhost}
+    port: ${SPRING_REDIS_PORT:6379}
+payment:
+  processor:
+    default:
+      url: ${PAYMENT_PROCESSOR_DEFAULT_URL:http://payment-processor-default:8080}
+    fallback:
+      url: ${PAYMENT_PROCESSOR_FALLBACK_URL:http://payment-processor-fallback:8080}
 logging:
   level:
     root: WARN
