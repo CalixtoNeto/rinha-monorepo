@@ -1,8 +1,15 @@
-﻿FROM maven:3.9.6-amazoncorretto-21 AS builder
+FROM ghcr.io/graalvm/native-image-community:21 AS builder
+# install Maven in the builder image
+RUN microdnf install -y maven && microdnf clean all
 WORKDIR /app
-COPY . /app
-RUN mvn package -DskipTests
-FROM amazoncorretto:21-alpine
+# copy only the loadbalancer module and the parent pom to speed up build
+COPY pom.xml ./
+COPY loadbalancer ./loadbalancer
+# build native executable for loadbalancer module
+RUN mvn -e -X -f loadbalancer/pom.xml -Pnative native:compile -DskipTests
+
+FROM ubuntu:22.04
 WORKDIR /app
-COPY --from=builder /app/target/rinha-loadbalancer.jar /app/rinha-loadbalancer.jar
-CMD ["java", "-jar", "/app/rinha-loadbalancer.jar"]
+COPY --from=builder /app/loadbalancer/target/rinha-loadbalancer /app/rinha-loadbalancer
+CMD ["/app/rinha-loadbalancer"]
+
