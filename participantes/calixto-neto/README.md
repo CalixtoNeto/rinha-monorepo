@@ -1,3 +1,8 @@
-﻿# SoluÃ§Ã£o para Rinha de Backend 2025
+# Solução para Rinha de Backend 2025
 
-Esta soluÃ§Ã£o utiliza um monorepo com backend compilado nativamente via GraalVM para execuÃ§Ã£o rÃ¡pida e baixa memÃ³ria, load balancer embedded com Undertow para distribuiÃ§Ã£o round-robin sem overhead de proxy extra, e Redis para persistÃªncia otimizada. Prioriza performance com processamento reativo, retries resilientes e agregaÃ§Ãµes eficientes no Redis. OtimizaÃ§Ãµes incluem GC epsilon, alocaÃ§Ãµes mÃ­nimas e paralelismo ajustado para 1.5 CPU / 350MB total.
+Backend em Java 21 com Spring WebFlux e Redis. As imagens são geradas via GraalVM Native Image e duas instâncias ficam atrás de um balanceador Undertow.
+
+- Endpoints disponíveis em `http://localhost:9999`
+- Repositório do código-fonte: https://github.com/xai-org/rinha-backend-2025
+
+Tecnologias: Java, GraalVM, Spring WebFlux, Undertow e Redis.

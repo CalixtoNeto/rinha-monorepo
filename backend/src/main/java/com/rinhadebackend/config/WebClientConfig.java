@@ -12,8 +12,11 @@ import java.time.Duration;
 @Configuration
 public class WebClientConfig {
 
-    @Value("")
+    @Value("${payment.processor.default.url}")
     private String defaultProcessorUrl;
+
+    @Value("${payment.processor.fallback.url}")
+    private String fallbackProcessorUrl;
 
     @Bean
     public WebClient defaultProcessorWebClient() {
@@ -21,6 +24,16 @@ public class WebClientConfig {
                 .responseTimeout(Duration.ofMillis(500));
         return WebClient.builder()
                 .baseUrl(defaultProcessorUrl)
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .build();
+    }
+
+    @Bean
+    public WebClient fallbackProcessorWebClient() {
+        HttpClient httpClient = HttpClient.create()
+                .responseTimeout(Duration.ofMillis(500));
+        return WebClient.builder()
+                .baseUrl(fallbackProcessorUrl)
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .build();
     }

@@ -1,17 +1,17 @@
 ﻿version: '3.8'
 services:
   loadbalancer:
-    image: rinha-loadbalancer:latest
+    image: calixto-neto/rinha-loadbalancer:latest
     ports:
-      - "80:80"
+      - "9999:80"
     environment:
       BACKEND1_URL: http://backend1:8080
       BACKEND2_URL: http://backend2:8080
     deploy:
       resources:
         limits:
-          cpus: '0.25'
-          memory: 50M
+          cpus: '0.15'
+          memory: 25M
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost"]
       interval: 10s
@@ -21,15 +21,17 @@ services:
       - rinha-net
 
   backend1:
-    image: rinha-backend:latest
+    image: calixto-neto/rinha-backend:latest
     environment:
-      REDIS_HOST: redis
-      JAVA_OPTS: -Xmx128m
+      SPRING_REDIS_HOST: redis
+      PAYMENT_PROCESSOR_DEFAULT_URL: http://payment-processor-default:8080
+      PAYMENT_PROCESSOR_FALLBACK_URL: http://payment-processor-fallback:8080
+      JAVA_OPTS: -Xmx96m
     deploy:
       resources:
         limits:
-          cpus: '0.5'
-          memory: 150M
+          cpus: '0.45'
+          memory: 100M
     depends_on:
       - redis
     healthcheck:
@@ -39,17 +41,20 @@ services:
       retries: 3
     networks:
       - rinha-net
+      - payment-processor
 
   backend2:
-    image: rinha-backend:latest
+    image: calixto-neto/rinha-backend:latest
     environment:
-      REDIS_HOST: redis
-      JAVA_OPTS: -Xmx128m
+      SPRING_REDIS_HOST: redis
+      PAYMENT_PROCESSOR_DEFAULT_URL: http://payment-processor-default:8080
+      PAYMENT_PROCESSOR_FALLBACK_URL: http://payment-processor-fallback:8080
+      JAVA_OPTS: -Xmx96m
     deploy:
       resources:
         limits:
-          cpus: '0.5'
-          memory: 150M
+          cpus: '0.45'
+          memory: 100M
     depends_on:
       - redis
     healthcheck:
@@ -59,14 +64,15 @@ services:
       retries: 3
     networks:
       - rinha-net
+      - payment-processor
 
   redis:
     image: redis:latest
-    command: redis-server --maxmemory 100mb --maxmemory-policy allkeys-lru
+    command: redis-server --maxmemory 75mb --maxmemory-policy allkeys-lru
     deploy:
       resources:
         limits:
-          cpus: '0.25'
+          cpus: '0.45'
           memory: 100M
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -79,3 +85,5 @@ services:
 networks:
   rinha-net:
     driver: bridge
+  payment-processor:
+    external: true
