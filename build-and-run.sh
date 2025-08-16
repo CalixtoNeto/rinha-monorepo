@@ -5,11 +5,11 @@ set -e
 mvn -T 1C clean package -DskipTests
 
 # Build Docker images in parallel for faster builds
-docker build -f Dockerfile.backend -t ghcr.io/calixto-neto/rinha-backend:latest . &
-docker build -f Dockerfile.loadbalancer -t ghcr.io/calixto-neto/rinha-loadbalancer:latest . &
+docker build -f Dockerfile.backend -t rinha-backend:latest . &
+docker build -f Dockerfile.loadbalancer -t rinha-loadbalancer:latest . &
 wait
 
-# Subir com Docker Compose
+# Subir com Docker Compose usando imagens locais
 cd participantes/calixto-neto/
-docker-compose up -d
+docker compose up -d
 echo "Aplicação buildada e rodando! Acesse via localhost:9999"

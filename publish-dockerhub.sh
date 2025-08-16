@@ -1,6 +1,12 @@
 #!/bin/bash
 set -euo pipefail
 
+# Só publica se houver alteração no pom.xml
+if git diff --quiet HEAD -- pom.xml; then
+  echo "pom.xml unchanged, skipping Docker Hub publish."
+  exit 0
+fi
+
 : "${DOCKERHUB_USERNAME:?}"
 : "${DOCKERHUB_TOKEN:?}"
 
