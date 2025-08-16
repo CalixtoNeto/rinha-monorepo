@@ -1,7 +1,6 @@
-﻿version: '3.8'
 services:
   loadbalancer:
-    image: ghcr.io/calixto-neto/rinha-loadbalancer:latest
+    image: rinha-loadbalancer:latest
     ports:
       - "9999:80"
     environment:
@@ -21,7 +20,7 @@ services:
       - rinha-net
 
   backend1:
-    image: ghcr.io/calixto-neto/rinha-backend:latest
+    image: rinha-backend:latest
     environment:
       SPRING_REDIS_HOST: redis
       PAYMENT_PROCESSOR_DEFAULT_URL: http://payment-processor-default:8080
@@ -44,7 +43,7 @@ services:
       - payment-processor
 
   backend2:
-    image: ghcr.io/calixto-neto/rinha-backend:latest
+    image: rinha-backend:latest
     environment:
       SPRING_REDIS_HOST: redis
       PAYMENT_PROCESSOR_DEFAULT_URL: http://payment-processor-default:8080
