@@ -14,8 +14,8 @@ fi
 mvn clean package -DskipTests
 
 # Build images with Docker Hub tags
-docker build -f Dockerfile.backend -t "$DOCKERHUB_USERNAME/rinha-backend:latest" .
-docker build -f Dockerfile.loadbalancer -t "$DOCKERHUB_USERNAME/rinha-loadbalancer:latest" .
+docker build --progress=plain -f Dockerfile.backend -t "$DOCKERHUB_USERNAME/rinha-backend:latest" .
+docker build --progress=plain -f Dockerfile.loadbalancer -t "$DOCKERHUB_USERNAME/rinha-loadbalancer:latest" .
 
 # Authenticate and push images
 echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
