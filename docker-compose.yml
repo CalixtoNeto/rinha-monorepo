@@ -1,0 +1,94 @@
+services:
+  loadbalancer:
+    build:
+      context: .
+      dockerfile: Dockerfile.loadbalancer
+    ports:
+      - "9999:80"
+    environment:
+      BACKEND1_URL: http://backend1:8080
+      BACKEND2_URL: http://backend2:8080
+    deploy:
+      resources:
+        limits:
+          cpus: '0.15'
+          memory: 25M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - rinha-net
+
+  backend1:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    environment:
+      SPRING_REDIS_HOST: redis
+      PAYMENT_PROCESSOR_DEFAULT_URL: http://payment-processor-default:8080
+      PAYMENT_PROCESSOR_FALLBACK_URL: http://payment-processor-fallback:8080
+      JAVA_OPTS: -Xmx96m
+    deploy:
+      resources:
+        limits:
+          cpus: '0.45'
+          memory: 100M
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - rinha-net
+      - payment-processor
+
+  backend2:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    environment:
+      SPRING_REDIS_HOST: redis
+      PAYMENT_PROCESSOR_DEFAULT_URL: http://payment-processor-default:8080
+      PAYMENT_PROCESSOR_FALLBACK_URL: http://payment-processor-fallback:8080
+      JAVA_OPTS: -Xmx96m
+    deploy:
+      resources:
+        limits:
+          cpus: '0.45'
+          memory: 100M
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - rinha-net
+      - payment-processor
+
+  redis:
+    image: redis:latest
+    command: redis-server --maxmemory 75mb --maxmemory-policy allkeys-lru
+    deploy:
+      resources:
+        limits:
+          cpus: '0.45'
+          memory: 100M
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - rinha-net
+
+networks:
+  rinha-net:
+    driver: bridge
+  payment-processor:
+    external: true

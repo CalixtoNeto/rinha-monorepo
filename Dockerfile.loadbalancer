@@ -6,7 +6,7 @@ WORKDIR /app
 COPY pom.xml ./
 COPY loadbalancer ./loadbalancer
 # build native executable for loadbalancer module
-RUN mvn -e -X -f loadbalancer/pom.xml -Pnative native:compile -DskipTests
+RUN mvn -f loadbalancer/pom.xml -Pnative native:compile -DskipTests
 
 FROM ubuntu:22.04
 WORKDIR /app
